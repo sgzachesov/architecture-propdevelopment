@@ -13,11 +13,13 @@
 #   K8S_VERSION       — версия Kubernetes (по умолчанию v1.35.0)
 #   MINIKUBE_CPUS     — число CPU
 #   MINIKUBE_MEMORY   — объём памяти (например, 4096mb)
+#   MINIKUBE_CNI      — сетевой плагин (например, calico — нужен для NetworkPolicy)
 
 set -euo pipefail
 
 MINIKUBE_DRIVER="${MINIKUBE_DRIVER:-docker}"
 K8S_VERSION="${K8S_VERSION:-v1.35.0}"
+MINIKUBE_CNI="${MINIKUBE_CNI:-}"
 
 if ! command -v minikube >/dev/null 2>&1; then
   echo "Ошибка: minikube не найден в PATH. Установите Minikube и повторите запуск." >&2
@@ -32,10 +34,11 @@ fi
 if minikube status --format='{{.Host}}' 2>/dev/null | grep -q Running; then
   echo "--- Кластер Minikube уже запущен, повторное создание не требуется ---"
 else
-  echo "--- Создание кластера Minikube (driver=${MINIKUBE_DRIVER}, k8s=${K8S_VERSION}) ---"
+  echo "--- Создание кластера Minikube (driver=${MINIKUBE_DRIVER}, k8s=${K8S_VERSION}, cni=${MINIKUBE_CNI:-auto}) ---"
   minikube start \
     --driver="${MINIKUBE_DRIVER}" \
     --kubernetes-version="${K8S_VERSION}" \
+    ${MINIKUBE_CNI:+--cni="${MINIKUBE_CNI}"} \
     ${MINIKUBE_CPUS:+--cpus="${MINIKUBE_CPUS}"} \
     ${MINIKUBE_MEMORY:+--memory="${MINIKUBE_MEMORY}"}
 fi
